@@ -1,89 +1,105 @@
-GitHub Permission Manager
-Python CLI tool to manage GitHub repository collaborators via the GitHub REST API.
+# GitHub Permission Manager
 
-Project Structure
+Manage GitHub repo collaborators via the GitHub REST API.
+
+---
+
+## Project Structure
+
+```
 github_permission_manager/
-├── mAin.py              # Entry point — runs all GitHubClient features
+├── mAin.py              → entry point, runs everything
 ├── src/
-│   ├── __init__.py
-│   ├── github_client.py # Core API wrapper (add/remove/list collaborators)
-│   └── settings.py      # App settings
-├── config/              # Config files
-├── logs/                # Log output (auto-created)
-├── .env                 # Secret credentials (never commit this)
-├── .gitignore
+│   ├── github_client.py → core API wrapper
+│   └── settings.py      → app settings
+├── logs/                → log files saved here
+├── .env                 → your secrets (never commit this)
 └── requirements.txt
+```
 
+---
 
-.env File — Setup & Reference
-The .env file stores sensitive credentials locally so they are never hardcoded in source code or committed to Git.
+## .env File
 
-Location
-Place .env in the project root (same folder as mAin.py):
-github_permission_manager/.env
+Create a file called `.env` in the project root with these two lines:
 
-Contents
-GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxx
-GITHUB_OWNER=your-github-username-or-org
+```
+GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxx
+GITHUB_OWNER=your-github-username
+```
 
-Variable Reference
+### How to get your GitHub Token
 
+1. Go to github.com → click your profile pic → Settings
+2. Scroll down → Developer Settings
+3. Personal access tokens → Tokens (classic)
+4. Click "Generate new token"
+5. Give it a name, set expiry, check the `repo` scope
+6. Click Generate and copy it immediately (shown only once)
 
-How to Get a GitHub Token
-Go to github.com → Profile → Settings
-Scroll to Developer Settings → Personal access tokens → Tokens (classic)
-Click Generate new token
-Note: give it a name like github-permission-manager
-Scopes: check repo and (if org repos) admin:org
-Click Generate token and copy it immediately — it is shown only once
+### Rules
+- Never commit .env to git (it's already in .gitignore)
+- If your token leaks, revoke it immediately from GitHub settings
 
-Security Rules
-Never commit .env — it is already in .gitignore
-Set a token expiration date (e.g. 90 days) for safety
-If leaked, revoke it immediately in GitHub Developer Settings
+---
 
-How mAin.py Works
-mAin.py is the entry point that exercises every method in GitHubClient in sequence. It is designed to demo and test the full API surface.
+## How mAin.py Works
 
-Execution Flow
+It runs through every GitHubClient method one by one:
 
+1. validate_token        → checks your token is valid
+2. is_collaborator       → checks if user is already on the repo
+3. add_collaborator      → invites the user with a permission level
+4. is_collaborator       → confirms the add worked
+5. list_collaborators    → prints everyone on the repo
+6. add_collaborator      → tests an invalid permission (shows error handling)
+7. remove_collaborator   → removes the user
+8. is_collaborator       → confirms removal worked
 
-Configuration Constants
-Edit these three constants at the top of mAin.py before running:
-REPO         = 'my-test-repo'       # A repo you own or admin
-COLLABORATOR = 'some-github-user'   # GitHub username to invite
-PERMISSION   = 'push'               # pull | triage | push | maintain | admin
+### Before running, edit these 3 lines at the top of mAin.py:
 
-Permission Levels
+```
+REPO         = "my-test-repo"        # a repo you own
+COLLABORATOR = "some-github-user"    # github username to test with
+PERMISSION   = "push"                # pull / triage / push / maintain / admin
+```
 
+### Permission levels
 
+- pull     → read only
+- triage   → read + manage issues, no code write
+- push     → read + write (good for contributors)
+- maintain → push + repo settings, no admin
+- admin    → full control
 
-Logging
-Logs are written to both the terminal and a file simultaneously.
+---
 
+## Logging
 
+Logs go to both terminal and file at the same time.
+File location: logs/app.log
 
-Watch Logs Live
+To watch logs live in a second terminal:
+```
 tail -f logs/app.log
+```
 
+---
 
-Quickstart
-Clone the repo and cd into it
-git clone https://github.com/your-org/github_permission_manager.git
-cd github_permission_manager
+## Quickstart
 
-Create and activate virtual environment
+```bash
+# 1. create and activate venv
 python3 -m venv venv
 source venv/bin/activate
 
-Install dependencies
+# 2. install dependencies
 pip install -r requirements.txt
 
-Create your .env file
-GITHUB_TOKEN=ghp_your_token_here
-GITHUB_OWNER=your-github-username
+# 3. create .env file with your token and owner
 
-Edit REPO and COLLABORATOR constants in mAin.py
+# 4. edit REPO and COLLABORATOR in mAin.py
 
-Run
+# 5. run
 python mAin.py
+```
