@@ -1,141 +1,89 @@
-# GitHub Permission Manager
+GitHub Permission Manager
+Python CLI tool to manage GitHub repository collaborators via the GitHub REST API.
 
-A professional CLI tool to **grant and revoke GitHub repository access** for users identified by their email address.
-
----
-
-## Project Structure
-
-```
+Project Structure
 github_permission_manager/
-├── config/
-│   ├── .env.example        ← copy to .env and fill in your token
-│   ├── users.yaml          ← email → GitHub username mapping
-│   └── repos.yaml          ← list of repos to manage
+├── mAin.py              # Entry point — runs all GitHubClient features
 ├── src/
 │   ├── __init__.py
-│   ├── settings.py         ← config loader
-│   ├── github_client.py    ← GitHub REST API wrapper
-│   └── permission_manager.py ← core grant/revoke logic
-├── logs/                   ← auto-created, gitignored
-├── cli.py                  ← CLI entry point
-├── requirements.txt
-└── .gitignore
-```
+│   ├── github_client.py # Core API wrapper (add/remove/list collaborators)
+│   └── settings.py      # App settings
+├── config/              # Config files
+├── logs/                # Log output (auto-created)
+├── .env                 # Secret credentials (never commit this)
+├── .gitignore
+└── requirements.txt
 
----
 
-## Setup
+.env File — Setup & Reference
+The .env file stores sensitive credentials locally so they are never hardcoded in source code or committed to Git.
 
-### 1. Install dependencies
+Location
+Place .env in the project root (same folder as mAin.py):
+github_permission_manager/.env
 
-```bash
+Contents
+GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+GITHUB_OWNER=your-github-username-or-org
+
+Variable Reference
+
+
+How to Get a GitHub Token
+Go to github.com → Profile → Settings
+Scroll to Developer Settings → Personal access tokens → Tokens (classic)
+Click Generate new token
+Note: give it a name like github-permission-manager
+Scopes: check repo and (if org repos) admin:org
+Click Generate token and copy it immediately — it is shown only once
+
+Security Rules
+Never commit .env — it is already in .gitignore
+Set a token expiration date (e.g. 90 days) for safety
+If leaked, revoke it immediately in GitHub Developer Settings
+
+How mAin.py Works
+mAin.py is the entry point that exercises every method in GitHubClient in sequence. It is designed to demo and test the full API surface.
+
+Execution Flow
+
+
+Configuration Constants
+Edit these three constants at the top of mAin.py before running:
+REPO         = 'my-test-repo'       # A repo you own or admin
+COLLABORATOR = 'some-github-user'   # GitHub username to invite
+PERMISSION   = 'push'               # pull | triage | push | maintain | admin
+
+Permission Levels
+
+
+
+Logging
+Logs are written to both the terminal and a file simultaneously.
+
+
+
+Watch Logs Live
+tail -f logs/app.log
+
+
+Quickstart
+Clone the repo and cd into it
+git clone https://github.com/your-org/github_permission_manager.git
+cd github_permission_manager
+
+Create and activate virtual environment
+python3 -m venv venv
+source venv/bin/activate
+
+Install dependencies
 pip install -r requirements.txt
-```
 
-### 2. Create your `.env` file
-
-```bash
-cp config/.env.example config/.env
-```
-
-Edit `config/.env`:
-
-```env
+Create your .env file
 GITHUB_TOKEN=ghp_your_token_here
-GITHUB_OWNER=your_github_username_or_org
-LOG_LEVEL=INFO
-```
+GITHUB_OWNER=your-github-username
 
-> **Token scopes required:** `repo` + `admin:org` (for org repos)
+Edit REPO and COLLABORATOR constants in mAin.py
 
-### 3. Add your users
-
-Edit `config/users.yaml`:
-
-```yaml
-users:
-  alice@example.com: alice-gh-username
-  bob@company.com:   bob-gh-username
-```
-
-### 4. Add your repos
-
-Edit `config/repos.yaml`:
-
-```yaml
-repos:
-  - my-private-repo
-  - backend-service
-```
-
----
-
-## CLI Usage
-
-### Validate your token
-```bash
-python cli.py validate
-```
-
-### Grant access (all repos)
-```bash
-python cli.py grant alice@example.com
-```
-
-### Grant access (specific repos)
-```bash
-python cli.py grant alice@example.com --repos my-private-repo backend-service
-```
-
-### Grant with a specific permission level
-```bash
-python cli.py grant alice@example.com --permission push
-```
-Permission levels: `pull` | `triage` | `push` | `maintain` | `admin`
-
-### Revoke access (all repos)
-```bash
-python cli.py revoke alice@example.com
-```
-
-### Revoke access (specific repos)
-```bash
-python cli.py revoke alice@example.com --repos my-private-repo
-```
-
-### Bulk grant (multiple users)
-```bash
-python cli.py grant-bulk alice@example.com,bob@company.com
-```
-
-### Bulk revoke (multiple users)
-```bash
-python cli.py revoke-bulk alice@example.com,bob@company.com
-```
-
-### List collaborators on a repo
-```bash
-python cli.py list-collaborators my-private-repo
-```
-
----
-
-## Example Output
-
-```
-────────────────────────────────────────────────────────────
-  Summary: 3 succeeded, 0 failed
-────────────────────────────────────────────────────────────
-  ✓  [GRANT]  alice@example.com (alice-gh) → my-private-repo
-  ✓  [GRANT]  alice@example.com (alice-gh) → backend-service
-  ✓  [GRANT]  alice@example.com (alice-gh) → another-project
-```
-
----
-
-## Security Notes
-
-- **Never commit `config/.env`** — it is listed in `.gitignore`
-- Rotate your GitHub token regularly
-- Use the **minimum permission** level needed for each user
+Run
+python mAin.py
