@@ -1,0 +1,14 @@
+# Environment — NEVER commit this
+config/.env
+
+# Logs
+logs/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
